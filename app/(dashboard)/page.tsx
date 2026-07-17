@@ -1,6 +1,6 @@
-import { Plus, Workflow } from "lucide-react"
+import { Workflow } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
+import { NewWorkflowButton } from "@/features/workflows/components/new-workflow-button"
 import {
   Empty,
   EmptyContent,
@@ -23,10 +23,7 @@ export default function Page() {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button>
-          <Plus />
-          New workflow
-        </Button>
+        <NewWorkflowButton />
       </EmptyContent>
     </Empty>
   )
