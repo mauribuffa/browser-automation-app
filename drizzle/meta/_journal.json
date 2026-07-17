@@ -8,6 +8,13 @@
       "when": 1784166864818,
       "tag": "0000_productive_talisman",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784167222706,
+      "tag": "0001_friendly_kulan_gath",
+      "breakpoints": true
     }
   ]
 }
