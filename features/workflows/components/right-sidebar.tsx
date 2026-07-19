@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { MoreHorizontal, Play, Trash2 } from "lucide-react"
+import { useReactFlow, useStore, useStoreApi } from "@xyflow/react"
+import { toast } from "sonner"
 
 import {
   Accordion,
@@ -158,9 +160,39 @@ const definitions = Object.values(nodeRegistry)
 
 // The Toolbar tab: a button per node type that adds it to the canvas.
 function Palette() {
+  const { addNodes, getNodes } = useReactFlow<StepNodeType>()
+  const store = useStoreApi()
+
   const add = (type: NodeType) => {
-    // TODO: add the clicked node to the canvas (one trigger max).
-    void type
+    const def = nodeRegistry[type]
+    const nodes = getNodes()
+
+    // Only one trigger is allowed per workflow.
+    if (def.kind === "trigger" && nodes.some((n) => n.data.kind === "trigger")) {
+      toast.error("A workflow can only have one trigger.")
+      return
+    }
+
+    // Number nodes of the same type (e.g. "Open URL 1", "Open URL 2") so they
+    // stay easy to tell apart.
+    const count = nodes.filter((n) => n.data.type === type).length
+    const title = `${def.label} ${count + 1}`
+
+    // Drop the node in the middle of the current view. width/height are the
+    // canvas viewport size; transform is [translateX, translateY, zoom].
+    const { width, height, transform } = store.getState()
+    const [tx, ty, zoom] = transform
+    const position = {
+      x: (width / 2 - tx) / zoom,
+      y: (height / 2 - ty) / zoom,
+    }
+
+    addNodes({
+      id: crypto.randomUUID(),
+      type: "step",
+      position,
+      data: { type, kind: def.kind, title, values: {} },
+    })
   }
 
   return (
@@ -250,11 +282,12 @@ function RunButton() {
 // The sidebar itself — header on top, then the Toolbar / Editor tabs.
 // ---------------------------------------------------------------------------
 
-export function RightSidebar() {
+export function RightSidebar({ workflowId }: { workflowId: string }) {
+  void workflowId // reserved for workflow-level actions (delete/run) below.
   const [tab, setTab] = useState("toolbar")
 
   // TODO: read the currently selected node from React Flow.
-  const selected: StepNodeType | undefined = undefined
+  const selected = useStore((s) => s.nodes.find((n) => n.selected)) as StepNodeType | undefined
 
   // TODO: auto-switch to the Editor tab when the selection changes.
 
